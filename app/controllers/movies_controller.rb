@@ -10,8 +10,24 @@ class MoviesController < ApplicationController
     # will render app/views/movies/show.<extension> by default
   end
 
-  def index
-    @movies = Movie.all
+ def index
+    @all_ratings = Movie.all_ratings
+    @targetColumn = params[:sort_by]
+    
+    if params[:sort_by].nil? && params[:ratings].nil?
+      if (!session[:sort_by].nil? || !session[:ratings].nil?)
+        flash.keep
+        redirect_to movies_path(:sort_by=>session[:sort_by], :ratings=>session[:ratings])
+      end
+    else
+      session[:ratings] = params[:ratings]
+      session[:sort_by] = params[:sort_by]
+    end
+
+    @selected_ratings = (params[:ratings].keys if !params[:ratings].nil?) || @all_ratings
+
+    @movies = Movie.where(rating: @selected_ratings).order(params[:sort_by])
+    
   end
 
   def new
